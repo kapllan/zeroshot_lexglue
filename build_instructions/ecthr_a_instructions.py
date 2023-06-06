@@ -32,23 +32,24 @@ with open(os.path.join(DATA_DIR, 'instruction-following-examples', 'ecthr_a.json
         for threshold in [4000, 3800, 3600, 3400, 3200, 3000]:
             shortened_text = ' '.join(text.split(' ')[:threshold])
             input_text_length = len(tokenizer.encode(shortened_text))
-            if templated_text_length + input_text_length <= 4000:
+            if templated_text_length + input_text_length <= 3900:
+                # break
+                text_input = TEMPLATES['ecthr_a']['INPUT_INTRODUCTORY_TEXT'] + f'\n"{shortened_text}"\n\n'
+                text_input += TEMPLATES['ecthr_a']['OPTIONS_PRESENTATION_TEXT']
+                for end_idx, label_name in enumerate(label_names):
+                    text_input += f'- Article {label_name}\n'
+                text_input += f'- None\n'
+                text_input += TEMPLATES['ecthr_a']['QUESTION_TEXT']
+                print(text_input)
+                if len(sample['labels']):
+                    answer = ", ".join([f"Article {label_names[label]}" for label in sorted(sample['labels'])])
+                else:
+                    answer = f'None'
+                file.write(json.dumps({'input_text': text_input, 'answer': answer}) + '\n')
+                print(f"{TEMPLATES['ecthr_a']['QUESTION_TEXT']} {answer}")
+                print('-'*100)
+                total_input += text_input
                 break
-        text_input = TEMPLATES['ecthr_a']['INPUT_INTRODUCTORY_TEXT'] + f'\n"{shortened_text}"\n\n'
-        text_input += TEMPLATES['ecthr_a']['OPTIONS_PRESENTATION_TEXT']
-        for end_idx, label_name in enumerate(label_names):
-            text_input += f'- Article {label_name}\n'
-        text_input += f'- None\n'
-        text_input += TEMPLATES['ecthr_a']['QUESTION_TEXT']
-        print(text_input)
-        if len(sample['labels']):
-            answer = ", ".join([f"Article {label_names[label]}" for label in sorted(sample['labels'])])
-        else:
-            answer = f'None'
-        file.write(json.dumps({'input_text': text_input, 'answer': answer}) + '\n')
-        print(f"{TEMPLATES['ecthr_a']['QUESTION_TEXT']} {answer}")
-        print('-'*100)
-        total_input += text_input
 
 # Count tokens and cost
 tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")

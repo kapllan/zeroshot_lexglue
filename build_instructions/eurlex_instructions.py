@@ -1,5 +1,7 @@
 import json
 import os
+import sys
+sys.path.append('../')
 from data import DATA_DIR
 from datasets import load_dataset
 import random
@@ -38,7 +40,7 @@ label_names = ['political framework', 'politics and public safety', 'executive p
                'America', 'Africa', 'Asia and Oceania', 'economic geography', 'political geography',
                'overseas countries and territories', 'United Nations']
 random.seed(42)
-random_ids = random.sample(range(len(predict_dataset)), k=1000)
+random_ids = random.sample(range(len(predict_dataset)), k=100)
 predict_dataset = predict_dataset.select(random_ids)
 
 

@@ -8,6 +8,7 @@ from datasets import load_dataset
 from data import DATA_DIR
 import argparse
 from sentence_transformers import SentenceTransformer, util
+
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 EUROVOC_CONCEPTS = ['political framework', 'politics and public safety', 'executive power and public service',
@@ -47,8 +48,28 @@ SCOTUS_AREAS = ['Criminal Procedure', 'Civil Rights', 'First Amendment', 'Due Pr
                 'Unions', 'Economic Activity', 'Judicial Power', 'Federalism', 'Interstate Relations',
                 'Federal Taxation', 'Miscellaneous']
 
+swiss_legal_data_configs = [
+    "swiss_criticality_prediction_bge_considerations",
+    "swiss_criticality_prediction_bge_facts",
+    "swiss_criticality_prediction_citation_considerations",
+    "swiss_criticality_prediction_citation_facts",
+    "swiss_judgment_prediction_xl_considerations",
+    "swiss_judgment_prediction_xl_facts",
+    "swiss_law_area_prediction_facts",
+    "swiss_law_area_prediction_considerations",
+    "swiss_law_area_prediction_sub_area_considerations",
+    "swiss_law_area_prediction_sub_area_facts"
+]
+
+
 def main(args):
-    predict_dataset = load_dataset("lexlms/lex_glue_v2", args.dataset_name, split="test",
+    if args.dataset_name in swiss_legal_data_configs:
+        benchmark = "joelito/lextreme"
+        split = "validation"
+    else:
+        benchmark = "lexlms/lex_glue_v2"
+        split = "test"
+    predict_dataset = load_dataset(benchmark, args.dataset_name, split=split,
                                    use_auth_token='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')
 
     if args.multi_label:
@@ -68,7 +89,8 @@ def main(args):
     dataset = []
     name_extension = f'_few_shot-{args.few_shot_k}' if args.few_shot_k else ''
     folder_name = f'_few_shot-predictions' if args.few_shot_k else 'zero-shot-predictions'
-    with open(os.path.join(DATA_DIR, folder_name, f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl')) as file:
+    with open(os.path.join(DATA_DIR, folder_name,
+                           f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl')) as file:
         for line in file:
             dataset.append(json.loads(line))
 
@@ -85,7 +107,8 @@ def main(args):
                     predictions[idx][l_idx] = 1
             if sum(predictions[idx]) == 0:
                 if args.multi_label:
-                    preds = [pred.strip('.').strip(' ').strip('\n') for pred in re.split('[\n,]', example['prediction'].lower())]
+                    preds = [pred.strip('.').strip(' ').strip('\n') for pred in
+                             re.split('[\n,]', example['prediction'].lower())]
                 else:
                     preds = [example['prediction'].lower()]
                 for pred in preds:
@@ -104,10 +127,10 @@ def main(args):
 
 
 parser = argparse.ArgumentParser(description='Evaluate GPT')
-parser.add_argument("--dataset_name", type=str, default='ecthr_b', help="Name of dataset as stored on HF")
+parser.add_argument("--dataset_name", type=str, default='swiss_criticality_prediction_bge_considerations', help="Name of dataset as stored on HF")
 parser.add_argument("--model_name", type=str, default='gpt-3.5-turbo', help="GPT model name")
-parser.add_argument("--multi_label", type=bool, default=True, help="Whether the task is multi-label")
-parser.add_argument("--few_shot_k", type=int, default=0, help="Number of k-shots")
+parser.add_argument("--multi_label", type=bool, default=False, help="Whether the task is multi-label")
+parser.add_argument("--few_shot_k", type=int, default=None, help="Number of k-shots")
 
 args = parser.parse_args()
 
