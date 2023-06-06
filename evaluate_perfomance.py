@@ -8,6 +8,7 @@ from datasets import load_dataset
 from data import DATA_DIR
 import argparse
 from sentence_transformers import SentenceTransformer, util
+import pandas as pd
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -124,10 +125,23 @@ def main(args):
     print(f'{nones} question unanswered!\n')
     print(f'{noisy_labels} noisy answers!\n')
     print(classification_report(y_true=labels, y_pred=predictions, target_names=label_names, zero_division=0, digits=3))
+    report = classification_report(y_true=labels, y_pred=predictions, target_names=label_names, zero_division=0,
+                                   digits=3, output_dict=True)
+    report_df = pd.DataFrame(report)
+    if not os.path.exists('reports/'):
+        os.makedirs('reports')
+    report_df.to_excel('reports/evaluation_report_' + args.dataset_name + '.xlsx', index=True)
+    report_df.to_json('reports/evaluation_report_' + args.dataset_name + '.json', force_ascii=False)
+    with open('reports/evaluation_report_' + args.dataset_name + '.txt', 'w') as f:
+        print(f'{nones} question unanswered!\n', file=f)
+        print(f'{noisy_labels} noisy answers!\n', file=f)
+        print(classification_report(y_true=labels, y_pred=predictions, target_names=label_names, zero_division=0,
+                                    digits=3), file=f)
 
 
 parser = argparse.ArgumentParser(description='Evaluate GPT')
-parser.add_argument("--dataset_name", type=str, default='swiss_criticality_prediction_bge_considerations', help="Name of dataset as stored on HF")
+parser.add_argument("--dataset_name", type=str, default='swiss_criticality_prediction_bge_considerations',
+                    help="Name of dataset as stored on HF")
 parser.add_argument("--model_name", type=str, default='gpt-3.5-turbo', help="GPT model name")
 parser.add_argument("--multi_label", type=bool, default=False, help="Whether the task is multi-label")
 parser.add_argument("--few_shot_k", type=int, default=None, help="Number of k-shots")
