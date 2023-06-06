@@ -22,16 +22,24 @@ if __name__ == '__main__':
 
     if args.config_name is None:
         configs = [
-            "swiss_criticality_prediction_bge_considerations",
-            "swiss_criticality_prediction_bge_facts",
-            "swiss_criticality_prediction_citation_considerations",
-            "swiss_criticality_prediction_citation_facts",
-            "swiss_judgment_prediction_xl_considerations",
-            "swiss_judgment_prediction_xl_facts",
-            "swiss_law_area_prediction_facts",
-            "swiss_law_area_prediction_considerations",
-            "swiss_law_area_prediction_sub_area_considerations",
-            "swiss_law_area_prediction_sub_area_facts"
+            "brazilian_court_decisions_judgment",
+            "brazilian_court_decisions_unanimity",
+            "german_argument_mining",
+            "greek_legal_code_chapter",
+            "greek_legal_code_subject",
+            "greek_legal_code_volume",
+            "swiss_judgment_prediction",
+            "online_terms_of_service_unfairness_levels",
+            "online_terms_of_service_clause_topics",
+            "covid19_emergency_event",
+            "multi_eurlex_level_1",
+            "multi_eurlex_level_2",
+            "multi_eurlex_level_3",
+            "greek_legal_ner",
+            "legalnero",
+            "lener_br",
+            "mapa_coarse",
+            "mapa_fine"
         ]
     elif ',' in args.config_name:
         configs = args.config_name.split(',')
@@ -50,8 +58,12 @@ if __name__ == '__main__':
             number_of_samples = args.number_of_samples
         else:
             number_of_samples = validation_dataset.num_rows
-        label_names = validation_dataset.features['label'].names
-        # label_names = sorted(list(set(label_names)))
+        try:
+            validation_dataset.features['label'].names
+        except:
+            label_names = validation_dataset.features['label'].feature.names
+
+        label_names = sorted(list(set(label_names)))
         random.seed(42)
         random_ids = random.sample(range(len(validation_dataset)), k=number_of_samples)
         validation_dataset = validation_dataset.select(random_ids)
@@ -85,9 +97,11 @@ if __name__ == '__main__':
                             text_input += f'-  {label_name}\n'
                         text_input += TEMPLATES[config_name]['QUESTION_TEXT']
                         # print(text_input)
-                        answer = label_names[sample['label']]
+                        if isinstance(sample['label'], int):
+                            answer = label_names[sample['label']]
+                        elif isinstance(sample['label'], list):
+                            answer = [label_names[l] for l in sample['label']]
                         label = sample['label']
-
                         file.write(json.dumps(
                             {'input_text': text_input, 'language': language, 'answer': answer, 'label': label,
                              'input': sample['input']},
