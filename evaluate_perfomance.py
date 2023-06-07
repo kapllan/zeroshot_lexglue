@@ -128,9 +128,13 @@ def main(args):
     report = classification_report(y_true=labels, y_pred=predictions, target_names=label_names, zero_division=0,
                                    digits=3, output_dict=True)
     report_df = pd.DataFrame(report)
+    report_df["metric"] = report_df.index
+    report_df['finetuning_task'] = args.dataset_name
+    report_df['question unanswered'] = nones
+    report_df['noisy answers'] = noisy_labels
     if not os.path.exists('reports/'):
         os.makedirs('reports')
-    report_df.to_excel('reports/evaluation_report_' + args.dataset_name + '.xlsx', index=True)
+    report_df.to_excel('reports/evaluation_report_' + args.dataset_name + '.xlsx', index=False)
     report_df.to_json('reports/evaluation_report_' + args.dataset_name + '.json', force_ascii=False)
     with open('reports/evaluation_report_' + args.dataset_name + '.txt', 'w') as f:
         print(f'{nones} question unanswered!\n', file=f)
