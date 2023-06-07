@@ -85,7 +85,7 @@ if __name__ == '__main__':
                 text = sample["input"]
                 language = sample["language"]
                 words = text.split(' ')
-                for threshold in [4000, 3800, 3600, 3400, 3200, 3000, 2800, 2600, 2400, 2000]:
+                for threshold in [4000, 3800, 3600, 3400, 3200, 3000, 2800, 2600, 2400, 2000,1000,500]:
                     shortened_text = ' '.join(text.split(' ')[:threshold])
                     input_text_length = len(tokenizer.encode(shortened_text))
                     if templated_text_length + input_text_length <= 3900:
