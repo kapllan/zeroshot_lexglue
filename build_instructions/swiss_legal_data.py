@@ -51,7 +51,7 @@ if __name__ == '__main__':
         else:
             number_of_samples = validation_dataset.num_rows
         label_names = validation_dataset.features['label'].names
-        # label_names = sorted(list(set(label_names)))
+
         random.seed(42)
         random_ids = random.sample(range(len(validation_dataset)), k=number_of_samples)
         validation_dataset = validation_dataset.select(random_ids)

@@ -34,4 +34,4 @@ all_results = all_results[
     ["finetuning_task", "metric", "micro avg", "macro avg", "weighted avg", "samples avg", "question unanswered",
      "noisy answers"]]
 all_results = all_results.drop_duplicates()
-all_results.to_excel(path / 'evaluation_report.xlsx')
+all_results.to_excel(path / 'evaluation_report_swiss_legal_data.xlsx')

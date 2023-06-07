@@ -35,11 +35,11 @@ if __name__ == '__main__':
             "multi_eurlex_level_1",
             "multi_eurlex_level_2",
             "multi_eurlex_level_3",
-            "greek_legal_ner",
-            "legalnero",
-            "lener_br",
-            "mapa_coarse",
-            "mapa_fine"
+            # "greek_legal_ner",
+            # "legalnero",
+            # "lener_br",
+            # "mapa_coarse",
+            # "mapa_fine"
         ]
     elif ',' in args.config_name:
         configs = args.config_name.split(',')
@@ -59,11 +59,11 @@ if __name__ == '__main__':
         else:
             number_of_samples = validation_dataset.num_rows
         try:
-            validation_dataset.features['label'].names
+            label_names = validation_dataset.features['label'].names
         except:
             label_names = validation_dataset.features['label'].feature.names
 
-        label_names = sorted(list(set(label_names)))
+
         random.seed(42)
         random_ids = random.sample(range(len(validation_dataset)), k=number_of_samples)
         validation_dataset = validation_dataset.select(random_ids)

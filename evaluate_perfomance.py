@@ -10,7 +10,7 @@ import argparse
 from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('clips/mfaq')  #all-MiniLM-L6-v2: We needed a multi-lingual model
 
 EUROVOC_CONCEPTS = ['political framework', 'politics and public safety', 'executive power and public service',
                     'international affairs', 'cooperation policy', 'international security', 'defence',
@@ -50,16 +50,34 @@ SCOTUS_AREAS = ['Criminal Procedure', 'Civil Rights', 'First Amendment', 'Due Pr
                 'Federal Taxation', 'Miscellaneous']
 
 swiss_legal_data_configs = [
-    "swiss_criticality_prediction_bge_considerations",
-    "swiss_criticality_prediction_bge_facts",
-    "swiss_criticality_prediction_citation_considerations",
-    "swiss_criticality_prediction_citation_facts",
-    "swiss_judgment_prediction_xl_considerations",
-    "swiss_judgment_prediction_xl_facts",
-    "swiss_law_area_prediction_facts",
-    "swiss_law_area_prediction_considerations",
-    "swiss_law_area_prediction_sub_area_considerations",
-    "swiss_law_area_prediction_sub_area_facts"
+            "swiss_criticality_prediction_bge_considerations",
+            "swiss_criticality_prediction_bge_facts",
+            "swiss_criticality_prediction_citation_considerations",
+            "swiss_criticality_prediction_citation_facts",
+            "swiss_judgment_prediction_xl_considerations",
+            "swiss_judgment_prediction_xl_facts",
+            "swiss_law_area_prediction_facts",
+            "swiss_law_area_prediction_considerations",
+            "swiss_law_area_prediction_sub_area_considerations",
+            "swiss_law_area_prediction_sub_area_facts",
+            "brazilian_court_decisions_judgment",
+            "brazilian_court_decisions_unanimity",
+            "german_argument_mining",
+            "greek_legal_code_chapter",
+            "greek_legal_code_subject",
+            "greek_legal_code_volume",
+            "swiss_judgment_prediction",
+            "online_terms_of_service_unfairness_levels",
+            "online_terms_of_service_clause_topics",
+            "covid19_emergency_event",
+            "multi_eurlex_level_1",
+            "multi_eurlex_level_2",
+            "multi_eurlex_level_3",
+            # "greek_legal_ner",
+            # "legalnero",
+            # "lener_br",
+            # "mapa_coarse",
+            # "mapa_fine"
 ]
 
 
@@ -87,7 +105,7 @@ def main(args):
             label_names = [label.lower() for label in SCOTUS_AREAS]
 
     label_names = sorted(label_names, key=lambda x: len(x), reverse=True)
-    print('labels: ', label_names)
+
 
     label_embeddings = [model.encode(label) for label in label_names]
     dataset = []
