@@ -29,6 +29,7 @@ for f in path.glob('**/*'):
         df = df.reset_index()
         all_results.append(df)
 all_results = pd.concat(all_results)
+# all_results['number_of_samples'] = all_results['support'] + all_results['question unanswered']
 all_results = all_results[
     ["finetuning_task", "metric", "micro avg", "macro avg", "weighted avg", "samples avg", "question unanswered",
      "noisy answers"]]

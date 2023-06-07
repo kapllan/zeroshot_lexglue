@@ -70,8 +70,7 @@ def main(args):
     else:
         benchmark = "lexlms/lex_glue_v2"
         split = "test"
-    predict_dataset = load_dataset(benchmark, args.dataset_name, split=split,
-                                   use_auth_token='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')
+    predict_dataset = load_dataset(benchmark, args.dataset_name, split=split)
 
     if args.multi_label:
         if args.dataset_name != 'eurlex':
@@ -83,8 +82,12 @@ def main(args):
         if args.dataset_name != 'scotus':
             label_names = [f'{label_name}'.lower() for idx, label_name in
                            enumerate(predict_dataset.features['label'].names)]
+
         else:
             label_names = [label.lower() for label in SCOTUS_AREAS]
+
+    label_names = sorted(label_names, key=lambda x: len(x), reverse=True)
+    print('labels: ', label_names)
 
     label_embeddings = [model.encode(label) for label in label_names]
     dataset = []
@@ -94,7 +97,7 @@ def main(args):
                            f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl')) as file:
         for line in file:
             dataset.append(json.loads(line))
-
+    print('Number of examples: ', len(dataset))
     noisy_labels = 0
     labels = np.zeros((len(dataset), len(label_names)))
     predictions = np.zeros((len(dataset), len(label_names)))
@@ -102,16 +105,19 @@ def main(args):
     for idx, example in enumerate(dataset):
         if example['prediction'] is not None:
             for l_idx, label_name in enumerate(label_names):
-                if label_name in dataset[idx]['answer'].lower():
-                    labels[idx][l_idx] = 1
-                if label_name in example['prediction'].lower():
-                    predictions[idx][l_idx] = 1
+                if sum(labels[idx]) == 0:
+                    if label_name in dataset[idx]['answer'].lower():
+                        labels[idx][l_idx] = 1
+                if sum(predictions[idx]) == 0:
+                    if label_name in example['prediction'].lower():
+                        predictions[idx][l_idx] = 1
             if sum(predictions[idx]) == 0:
                 if args.multi_label:
                     preds = [pred.strip('.').strip(' ').strip('\n') for pred in
                              re.split('[\n,]', example['prediction'].lower())]
                 else:
                     preds = [example['prediction'].lower()]
+                    print('Length of preds: ', len(preds))
                 for pred in preds:
                     if len(pred) >= 3:
                         pred_embeddings = model.encode(pred)
@@ -134,6 +140,7 @@ def main(args):
     report_df['noisy answers'] = noisy_labels
     if not os.path.exists('reports/'):
         os.makedirs('reports')
+
     report_df.to_excel('reports/evaluation_report_' + args.dataset_name + '.xlsx', index=False)
     report_df.to_json('reports/evaluation_report_' + args.dataset_name + '.json', force_ascii=False)
     with open('reports/evaluation_report_' + args.dataset_name + '.txt', 'w') as f:
