@@ -9,6 +9,7 @@ from data import DATA_DIR
 import argparse
 from sentence_transformers import SentenceTransformer, util
 import pandas as pd
+from ast import literal_eval
 
 model = SentenceTransformer('clips/mfaq')  #all-MiniLM-L6-v2: We needed a multi-lingual model
 
@@ -80,6 +81,12 @@ swiss_legal_data_configs = [
             # "mapa_fine"
 ]
 
+def make_boolean(value):
+    value_capitalized = str(value).lower().title()
+    if literal_eval(value_capitalized) in [True, False, None]:
+        return literal_eval(str(value).title())
+    else:
+        return value
 
 def main(args):
     if args.dataset_name in swiss_legal_data_configs:
@@ -90,10 +97,12 @@ def main(args):
         split = "test"
     predict_dataset = load_dataset(benchmark, args.dataset_name, split=split)
 
-    if args.multi_label:
+    multi_label = make_boolean(args.multi_label)
+
+    if multi_label:
         if args.dataset_name != 'eurlex':
             label_names = [f'{label_name}'.lower() for idx, label_name in
-                           enumerate(predict_dataset.features['labels'].feature.names)] + ['none']
+                           enumerate(predict_dataset.features['label'].feature.names)] + ['none']
         else:
             label_names = ['Article ' + label.lower() for label in EUROVOC_CONCEPTS]
     else:
@@ -123,27 +132,33 @@ def main(args):
     for idx, example in enumerate(dataset):
         if example['prediction'] is not None:
             for l_idx, label_name in enumerate(label_names):
-                if sum(labels[idx]) == 0:
+                if not multi_label:
+                    if sum(labels[idx]) == 0:
+                        if label_name in dataset[idx]['answer'].lower():
+                            labels[idx][l_idx] = 1
+                    if sum(predictions[idx]) == 0:
+                        if label_name in example['prediction'].lower():
+                            predictions[idx][l_idx] = 1
+                else:
                     if label_name in dataset[idx]['answer'].lower():
                         labels[idx][l_idx] = 1
-                if sum(predictions[idx]) == 0:
                     if label_name in example['prediction'].lower():
                         predictions[idx][l_idx] = 1
             if sum(predictions[idx]) == 0:
-                if args.multi_label:
+                if multi_label:
                     preds = [pred.strip('.').strip(' ').strip('\n') for pred in
                              re.split('[\n,]', example['prediction'].lower())]
                 else:
                     preds = [example['prediction'].lower()]
-                    print('Length of preds: ', len(preds))
                 for pred in preds:
                     if len(pred) >= 3:
                         pred_embeddings = model.encode(pred)
                         label_id = util.cos_sim(pred_embeddings, label_embeddings).argmax().numpy()
                         predictions[idx][label_id] = 1
-                        print(f'Prediction "{pred}" best matches label "{dataset[idx]["answer"].lower()}"')
+                        # print(f'Prediction "{pred}" best matches label "{dataset[idx]["answer"].lower()}"')
                 noisy_labels += 1
         else:
+            print('Not prediced: ', example['prediction'])
             nones += 1
 
     print(f'{nones} question unanswered!\n')

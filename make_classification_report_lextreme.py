@@ -23,16 +23,6 @@ task_type_mapping= {
     "mapa_coarse": "NER",
     "mapa_fine": "NER",
     "original": "NER",
-    "swiss_criticality_prediction_bge_facts": "SLTC",
-    "swiss_criticality_prediction_bge_considerations": "SLTC",
-    "swiss_criticality_prediction_citation_facts": "SLTC",
-    "swiss_criticality_prediction_citation_considerations": "SLTC",
-    "swiss_law_area_prediction_facts": "SLTC",
-    "swiss_law_area_prediction_considerations": "SLTC",
-    "swiss_law_area_prediction_sub_area_facts": "SLTC",
-    "swiss_law_area_prediction_sub_area_considerations": "SLTC",
-    "swiss_judgment_prediction_xl_facts": "SLTC",
-    "swiss_judgment_prediction_xl_considerations": "SLTC",
     "ecthr_a": "MLTC",
     "ecthr_b": "MLTC",
     "eurlex": "MLTC",
@@ -42,7 +32,7 @@ task_type_mapping= {
     "case_hold": "MCQA"
   }
 
-swiss_legal_data_configs = [
+lextreme_configs = [
             "brazilian_court_decisions_judgment",
             "brazilian_court_decisions_unanimity",
             "german_argument_mining",
@@ -63,9 +53,9 @@ swiss_legal_data_configs = [
             # "mapa_fine"
         ]
 
-for config in swiss_legal_data_configs:
+for config in lextreme_configs:
     if task_type_mapping[config]=='MLTC':
-        command = 'python evaluate_perfomance.py --multi_label --dataset_name ' + config
+        command = 'python evaluate_perfomance.py --multi_label TRUE --dataset_name ' + config
     
     else:
         command = 'python evaluate_perfomance.py --dataset_name ' + config
