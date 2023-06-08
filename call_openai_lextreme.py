@@ -1,4 +1,5 @@
 import os
+import time
 
 configs = [
             "brazilian_court_decisions_judgment",
@@ -21,6 +22,8 @@ configs = [
             # "mapa_fine"
         ]
 
-for config in configs:
-    command = 'python call_openai.py --dataset_name ' + config + ' --model_name gpt-3.5-turbo'
-    os.system(command)
+for n in range(0, 10):
+    for config in configs:
+        command = 'python call_openai.py --dataset_name ' + config + ' --model_name gpt-3.5-turbo'
+        os.system(command)
+    time.sleep(5)
