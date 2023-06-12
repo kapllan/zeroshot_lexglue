@@ -140,9 +140,12 @@ def main(args):
                         if label_name in example['prediction'].lower():
                             predictions[idx][l_idx] = 1
                 else:
-                    if label_name in dataset[idx]['answer'].lower():
+                    if label_name in [a.lower() for a in dataset[idx]['answer']]:
                         labels[idx][l_idx] = 1
-                    if label_name in example['prediction'].lower():
+                    if label_name in [pred.strip('.').strip(' ').strip('\n') for pred in re.split('[\n,]', example['prediction'].lower())]:
+                        print(label_name)
+                        print([pred.strip('.').strip(' ').strip('\n') for pred in re.split('[\n,]', example['prediction'].lower())])
+                        print('-------------------')
                         predictions[idx][l_idx] = 1
             if sum(predictions[idx]) == 0:
                 if multi_label:
