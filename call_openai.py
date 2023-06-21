@@ -41,9 +41,9 @@ def main(args):
 
     predictions = []
     if not args.few_shot_k and os.path.exists(
-            os.path.join(DATA_DIR + '/zero-shot-predictions/',
+            os.path.join(DATA_DIR + f'/{args.zeroshot_output_path}/',
                          f'{args.dataset_name}_{args.model_name}_predictions.jsonl')):
-        with open(os.path.join(DATA_DIR+ '/zero-shot-predictions/', f'{args.dataset_name}_{args.model_name}_predictions.jsonl')) as in_file:
+        with open(os.path.join(DATA_DIR + f'/{args.zeroshot_output_path}/', f'{args.dataset_name}_{args.model_name}_predictions.jsonl')) as in_file:
             for line in in_file:
                 predictions.append(json.loads(line))
 
@@ -86,7 +86,7 @@ def main(args):
                 dataset[idx]['prediction'] = None
 
     name_extension = f'_few_shot-{args.few_shot_k}' if args.few_shot_k else ''
-    folder_name = f'few-shot-predictions' if args.few_shot_k else 'zero-shot-predictions'
+    folder_name = f'few-shot-predictions' if args.few_shot_k else args.zeroshot_output_path
     with open(os.path.join(DATA_DIR, folder_name,
                            f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl'), 'w') as file:
         for example in dataset:
@@ -102,6 +102,7 @@ parser.add_argument("--few_shot_k", type=int,
                     default=None, help="Number of k-shots")
 parser.add_argument("--truncate_demonstrations", type=int,
                     default=100, help="Truncation of demonstrations")
+parser.add_argument("--zeroshot_output_path", help="Define the zero shot putput directory.", default="zero-shot-predictions")
 
 args = parser.parse_args()
 

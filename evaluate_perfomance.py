@@ -119,7 +119,7 @@ def main(args):
     label_embeddings = [model.encode(label) for label in label_names]
     dataset = []
     name_extension = f'_few_shot-{args.few_shot_k}' if args.few_shot_k else ''
-    folder_name = f'_few_shot-predictions' if args.few_shot_k else 'zero-shot-predictions'
+    folder_name = f'_few_shot-predictions' if args.few_shot_k else args.zeroshot_output_path
     with open(os.path.join(DATA_DIR, folder_name,
                            f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl')) as file:
         for line in file:
@@ -177,9 +177,21 @@ def main(args):
     if not os.path.exists('reports/'):
         os.makedirs('reports')
 
-    report_df.to_excel('reports/evaluation_report_' + args.dataset_name + '.xlsx', index=False)
-    report_df.to_json('reports/evaluation_report_' + args.dataset_name + '.json', force_ascii=False)
-    with open('reports/evaluation_report_' + args.dataset_name + '.txt', 'w') as f:
+    if not os.path.exists(f'reports/{args.zeroshot_output_path}'):
+        os.makedirs(f'reports/{args.zeroshot_output_path}')
+
+    with pd.ExcelWriter(f'reports/{args.zeroshot_output_path}/evaluation_report_' + args.dataset_name + '.xlsx') as writer:
+        report_df.to_excel(
+            writer, sheet_name="report")
+        predictions_df = pd.DataFrame(predictions, columns=label_names)
+        predictions_df.to_excel(
+            writer, sheet_name="predictions")
+        labels_df = pd.DataFrame(labels, columns=label_names)
+        labels_df.to_excel(
+            writer, sheet_name="answers")
+
+    report_df.to_json(f'reports/{args.zeroshot_output_path}/evaluation_report_' + args.dataset_name + '.json', force_ascii=False)
+    with open(f'reports/{args.zeroshot_output_path}/evaluation_report_' + args.dataset_name + '.txt', 'w') as f:
         print(f'{nones} question unanswered!\n', file=f)
         print(f'{noisy_labels} noisy answers!\n', file=f)
         print(classification_report(y_true=labels, y_pred=predictions, target_names=label_names, zero_division=0,
@@ -192,6 +204,7 @@ parser.add_argument("--dataset_name", type=str, default='swiss_criticality_predi
 parser.add_argument("--model_name", type=str, default='gpt-3.5-turbo', help="GPT model name")
 parser.add_argument("--multi_label", type=bool, default=False, help="Whether the task is multi-label")
 parser.add_argument("--few_shot_k", type=int, default=None, help="Number of k-shots")
+parser.add_argument("--zeroshot_output_path", help="Define the zero shot putput directory.", default="zero-shot-predictions")
 
 args = parser.parse_args()
 
