@@ -14,11 +14,21 @@ configs = [
     "swiss_law_area_prediction_sub_area_facts"
 ]
 
-for n in range(0, 10):
+print('Starting with claude-2.')
+for n in range(0, 1):
     for config in configs:
-        command = 'python call_llama.py --dataset_name ' + config
+        command = f'python call_other_models.py --dataset_name {config} --model_name claude-2'
         os.system(command)
     time.sleep(5)
+
+
+print('Starting with llama.')
+for n in range(0, 1):
+    for config in configs:
+        command = f'python call_other_models.py --dataset_name {config} --model_name llama-2-70b-chat-hf'
+        os.system(command)
+    time.sleep(5)
+
 
 '''for n in range(0, 10):
     for config in configs:
