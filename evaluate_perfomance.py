@@ -120,8 +120,10 @@ def main(args):
     dataset = []
     name_extension = f'_few_shot-{args.few_shot_k}' if args.few_shot_k else ''
     folder_name = f'_few_shot-predictions' if args.few_shot_k else args.zeroshot_output_path
-    with open(os.path.join(DATA_DIR, folder_name,
-                           f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl')) as file:
+    model_specific_output_folder_name = DATA_DIR + f'/{args.model_name}_{args.zeroshot_output_path}/'
+    model_specific_output_filename = os.path.join(model_specific_output_folder_name,
+                                                  f'{args.dataset_name}_{args.model_name}_predictions{name_extension}.jsonl')
+    with open(model_specific_output_filename) as file:
         for line in file:
             dataset.append(json.loads(line))
     print('Number of examples: ', len(dataset))
@@ -177,10 +179,10 @@ def main(args):
     if not os.path.exists('reports/'):
         os.makedirs('reports')
 
-    if not os.path.exists(f'reports/{args.zeroshot_output_path}'):
-        os.makedirs(f'reports/{args.zeroshot_output_path}')
+    if not os.path.exists(f'reports/{args.model_name}'):
+        os.makedirs(f'reports/{args.model_name}')
 
-    with pd.ExcelWriter(f'reports/{args.zeroshot_output_path}/evaluation_report_' + args.dataset_name + '.xlsx') as writer:
+    with pd.ExcelWriter(f'reports/{args.model_name}/evaluation_report_{args.model_name}_{args.dataset_name}.xlsx') as writer:
         report_df.to_excel(
             writer, sheet_name="report")
         predictions_df = pd.DataFrame(predictions, columns=label_names)
@@ -190,8 +192,8 @@ def main(args):
         labels_df.to_excel(
             writer, sheet_name="answers")
 
-    report_df.to_json(f'reports/{args.zeroshot_output_path}/evaluation_report_' + args.dataset_name + '.json', force_ascii=False)
-    with open(f'reports/{args.zeroshot_output_path}/evaluation_report_' + args.dataset_name + '.txt', 'w') as f:
+    report_df.to_json(f'reports/{args.model_name}/evaluation_report_{args.model_name}_{args.dataset_name}.json', force_ascii=False)
+    with open(f'reports/{args.model_name}/evaluation_report_{args.model_name}_{args.dataset_name}.txt', 'w') as f:
         print(f'{nones} question unanswered!\n', file=f)
         print(f'{noisy_labels} noisy answers!\n', file=f)
         print(classification_report(y_true=labels, y_pred=predictions, target_names=label_names, zero_division=0,
@@ -201,7 +203,7 @@ def main(args):
 parser = argparse.ArgumentParser(description='Evaluate GPT')
 parser.add_argument("--dataset_name", type=str, default='swiss_criticality_prediction_bge_considerations',
                     help="Name of dataset as stored on HF")
-parser.add_argument("--model_name", type=str, default='gpt-3.5-turbo', help="GPT model name")
+parser.add_argument("--model_name", type=str, help="GPT model name")
 parser.add_argument("--multi_label", type=bool, default=False, help="Whether the task is multi-label")
 parser.add_argument("--few_shot_k", type=int, default=None, help="Number of k-shots")
 parser.add_argument("--zeroshot_output_path", help="Define the zero shot putput directory.", default="zero-shot-predictions")
