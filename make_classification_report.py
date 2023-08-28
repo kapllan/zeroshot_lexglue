@@ -101,7 +101,7 @@ def main(args):
         ["finetuning_task", "metric", "micro avg", "macro avg", "weighted avg", "samples avg", "question unanswered",
          "noisy answers"]]
     all_results = all_results.drop_duplicates()
-    all_results.to_excel(path / 'evaluation_report_lextreme.xlsx')
+    all_results.to_excel(path / 'evaluation_report_final.xlsx')
 
 parser = argparse.ArgumentParser(description='Evaluate Models.')
 parser.add_argument("--model_name", type=str, help="Model name")
